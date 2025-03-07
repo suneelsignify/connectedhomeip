@@ -194,7 +194,7 @@
         ],
         "Bridged Device Basic Information": ["ProductAppearance"],
         "Chime": ["ActiveChimeID", "Enabled"],
-        "Descriptor": ["ClusterRevision", "FeatureMap"],
+        "Descriptor": ["ClusterRevision", "FeatureMap", "EndpointUniqueId"],
         "Device Energy Management": [
             "ESAType",
             "ESACanGenerate",

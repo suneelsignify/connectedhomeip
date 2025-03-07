@@ -26,6 +26,7 @@
 #include "att-storage.h"
 #include <stdbool.h> // For bool
 #include <stdint.h>  // For various uint*_t types
+#include <string>
 
 #include <app/util/basic-types.h>
 #include <app/util/types_stub.h> // For various types.
@@ -225,6 +226,9 @@ struct EmberAfDefinedEndpoint
      * Span pointing to a list of tags. Lifetime has to outlive usage, and data is owned by callers.
      */
     chip::Span<const chip::app::Clusters::Descriptor::Structs::SemanticTagStruct::Type> tagList;
+
+
+    std::string endpointUniqueId;
 };
 
 // Cluster specific types
