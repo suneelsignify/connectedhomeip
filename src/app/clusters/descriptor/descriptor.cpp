@@ -217,10 +217,10 @@ CHIP_ERROR EncodeString(AttributeValueEncoder & encoder, const char * buf, size_
     return encoder.Encode(chip::CharSpan(buf, strnlen(buf, maxBufSize)));
 }
 
-CHIP_ERROR DescriptorAttrAccess::ReadEndpointUniqueId(EndpointId endpoint, AttributeValueEncoder & aEncoder){        
-    char endpointUniqueId[32 + 1] = { 0 };    
+CHIP_ERROR DescriptorAttrAccess::ReadEndpointUniqueId(EndpointId endpoint, AttributeValueEncoder & aEncoder){            
+    char endpointUniqueId[Attributes::EndpointUniqueId::TypeInfo::MaxLength() + 1] = { 0 };    
     GetEndpointUniqueIdForEndPoint(endpoint, endpointUniqueId);    
-    return EncodeString(aEncoder, endpointUniqueId, 32);
+    return EncodeString(aEncoder, endpointUniqueId, Attributes::EndpointUniqueId::TypeInfo::MaxLength());
 }
 
 CHIP_ERROR DescriptorAttrAccess::ReadServerClusters(EndpointId endpoint, AttributeValueEncoder & aEncoder)

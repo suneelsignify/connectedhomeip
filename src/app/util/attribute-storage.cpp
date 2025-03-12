@@ -1081,7 +1081,7 @@ CHIP_ERROR SetTagList(EndpointId endpoint, Span<const Clusters::Descriptor::Stru
     return CHIP_NO_ERROR;
 }
 
-CHIP_ERROR SetEndPointUniqueId(chip::EndpointId endpoint, std::string endpointUniqueId)
+CHIP_ERROR SetEndPointUniqueIdForEndPoint(chip::EndpointId endpoint, std::string endpointUniqueId)
 {
     uint16_t endpointIndex = emberAfIndexFromEndpoint(endpoint);
     if (endpointIndex == 0xFFFF)

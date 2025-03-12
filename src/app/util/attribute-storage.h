@@ -213,7 +213,7 @@ CHIP_ERROR SetTagList(chip::EndpointId endpoint,
 CHIP_ERROR GetEndpointUniqueIdForEndPoint(chip::EndpointId endpoint, char * buf);
 
 
-CHIP_ERROR SetEndPointUniqueId(chip::EndpointId endpoint, std::string endpointUniqueId);
+CHIP_ERROR SetEndPointUniqueIdForEndPoint(chip::EndpointId endpoint, std::string endpointUniqueId);
 
 // Returns number of clusters put into the passed cluster list
 // for the given endpoint and client/server polarity
