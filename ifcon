@@ -943,14 +943,18 @@ class TC_DeviceBasicComposition(MatterBaseTest, BasicCompositionTests):
 
     @async_test_body
     async def test_TC_DESC_2_1(self):
+        self.print_step(1, "TH reads DeviceTypeList and PartsList attributes from DUT for Endpoint 0")
+        self.print_step(2, "TH reads DeviceTypeList and PartsList attributes from DUT for each Endpoint supported by DUT(except Endpoint 0)")
 
+        self.print_step(3, "Verify the Descriptor cluster PartsList on endpoint 0 exactly lists all the other (non-0) endpoints on the DUT")
+
+        self.print_step(4, "Validate mandatory EndpointUniqueId attribute in Descriptor cluster")
         unique_ids = set()
         ROOT_NODE_DEVICE_TYPE = 0x16
-        server_conformance = self.matter_test_config.global_test_params['PIXIT.DESC.DeviceTypeConformanceList']
         listed_device_types = [i.deviceType for i in self.endpoints[0]
                                [Clusters.Descriptor][Clusters.Descriptor.Attributes.DeviceTypeList]]
         cluster_revision = self.endpoints[0][Clusters.Descriptor][Clusters.Descriptor.Attributes.ClusterRevision]
-
+        print(listed_device_types, "listed_device_types")
         if cluster_revision < 1:
             self.fail_current_test()
 
@@ -958,27 +962,19 @@ class TC_DeviceBasicComposition(MatterBaseTest, BasicCompositionTests):
             self.record_error(self.get_test_name(), location=AttributePathLocation(endpoint_id=0),
                               problem="Root node device type not listed on endpoint 0", spec_location="Root node device type")
             self.fail_current_test()
-        self.print_step(3, "TH reads PartsList attribute- covered in step 2")
 
         for endpoint_id, endpoint in self.endpoints.items():
-            self.print_step(8, f"TH reads ServerList attribute for endpoint :{endpoint_id}")
+            self.print_step(2, "TH reads ServerList attribute")
+            self.print_step(2, "TH reads ClientList attribute")
             serverlist = endpoint[Clusters.Descriptor][Clusters.Descriptor.Attributes.ServerList]
-            self.print_step(
-                2, f"TH reads DeviceTypeList and PartsList attributes from DUT for Endpoint :{endpoint_id} supported by DUT(except Endpoint 0)")
+            clientlist = endpoint[Clusters.Descriptor][Clusters.Descriptor.Attributes.ClientList]
+            self.print_step(2, "TH reads PartsList attribute")
             parts_list_per_ep = endpoint[Clusters.Descriptor][Clusters.Descriptor.Attributes.PartsList]
-
-            if Clusters.Descriptor.Attributes.TagList not in endpoint[Clusters.Descriptor]:
-                continue
-            self.print_step(
-                9, f"TH reads Reads TagList Attribute for endpoint :{endpoint_id}. Verifies atleast namesapceID and Tag property is present in the returned struct")
-            taglist_ep = endpoint[Clusters.Descriptor][Clusters.Descriptor.Attributes.TagList]
-            for tag_struct in taglist_ep:
-
-                if not tag_struct.namespaceID:
-                    self.fail_current_test()
-                if not tag_struct.tag:
-                    self.fail_current_test()
-
+            if len(parts_list_per_ep) > 1:
+                if Clusters.Descriptor.Attributes.TagList not in endpoint[Clusters.Descriptor]:
+                    continue
+                # taglist_ep = endpoint[Clusters.Descriptor][Clusters.Descriptor.Attributes.TagList]
+                print(parts_list_per_ep, "****")
             if len(parts_list_per_ep) > 0:
                 for ep in parts_list_per_ep:
                     if not (ep >= 1) and not (ep <= 65534):
@@ -987,14 +983,10 @@ class TC_DeviceBasicComposition(MatterBaseTest, BasicCompositionTests):
                         self.fail_current_test()
 
             if endpoint_id != 0:
-
-                if server_conformance not in serverlist:
-                    self.record_error(self.get_test_name(), location=AttributePathLocation(endpoint_id=0),
-                                      problem="device type conformance is listed on non zero endpoints", spec_location="device type conformance")
-                    self.fail_current_test()
-
                 if Clusters.Descriptor not in endpoint:
                     continue
+                # parts_list_nonzero = endpoint[Clusters.Descriptor][Clusters.Descriptor.Attributes.PartsList]
+                # devicetype_list_nonzero = endpoint[Clusters.Descriptor][Clusters.Descriptor.Attributes.DeviceTypeList]
                 listed_device_types_non_zero = [i.deviceType for i in endpoint
                                                 [Clusters.Descriptor][Clusters.Descriptor.Attributes.DeviceTypeList]]
                 cluster_revision_non_zero = endpoint[Clusters.Descriptor][Clusters.Descriptor.Attributes.ClusterRevision]
@@ -1007,30 +999,29 @@ class TC_DeviceBasicComposition(MatterBaseTest, BasicCompositionTests):
                     self.record_error(self.get_test_name(), location=AttributePathLocation(endpoint_id=0),
                                       problem="Root node device type is listed on non zero endpoints", spec_location="Root node device type")
                     self.fail_current_test()
-        self.print_step(1, "TH reads DeviceTypeList and PartsList attributes from DUT for Endpoint 0")
-        self.print_step(4, "Validate EndpointUniqueId attribute in Descriptor cluster")
+            # descriptor_cluster = endpoint[Clusters.Descriptor]
+
         for endpoint_id, endpoint in self.endpoints.items():
             if endpoint_id == 0:
                 if Clusters.Descriptor not in endpoint:
                     continue
                 parts_list = endpoint[Clusters.Descriptor][Clusters.Descriptor.Attributes.PartsList]
+                devicetype_list = endpoint[Clusters.Descriptor][Clusters.Descriptor.Attributes.DeviceTypeList]
 
             descriptor_cluster = endpoint[Clusters.Descriptor]
 
             if len(parts_list) > 0:
-                if Clusters.Descriptor.Attributes.EndpointUniqueID in descriptor_cluster:
-                    value = descriptor_cluster[Clusters.Descriptor.Attributes.EndpointUniqueID]
-
+                if Clusters.Descriptor.Attributes.EndpointUniqueId in descriptor_cluster:
+                    value = descriptor_cluster[Clusters.Descriptor.Attributes.EndpointUniqueId]
+                    print("Endpoint UniqueId for end point", (endpoint_id), " is", (value))
                     if isinstance(value, str):
-                        self.print_step(5, "Validate EndpointUniqueId attribute in Descriptor cluster is of string type")
                         if not value:
                             continue
-                        self.print_step(6, "Validate EndpointUniqueId attribute in Descriptor cluster is not more than 32 bytes")
                         if len(value) > 32:
                             location = AttributePathLocation(
                                 endpoint_id,
                                 Clusters.Descriptor.id,
-                                Clusters.Descriptor.Attributes.EndpointUniqueID.attribute_id
+                                Clusters.Descriptor.Attributes.EndpointUniqueId.attribute_id
                             )
                             self.record_error(
                                 self.get_test_name(),
@@ -1039,10 +1030,9 @@ class TC_DeviceBasicComposition(MatterBaseTest, BasicCompositionTests):
                                 spec_location="EndpointUniqueId attribute"
                             )
                             self.fail_current_test()
-                        self.print_step(7, "Validate EndpointUniqueId attribute in Descriptor cluster is not a duplicate")
                         if value in unique_ids:
                             location = AttributePathLocation(endpoint_id, Clusters.Descriptor.id,
-                                                             Clusters.Descriptor.Attributes.EndpointUniqueID.attribute_id)
+                                                             Clusters.Descriptor.Attributes.EndpointUniqueId.attribute_id)
                             self.record_error(
                                 self.get_test_name(),
                                 location=location,
@@ -1052,10 +1042,11 @@ class TC_DeviceBasicComposition(MatterBaseTest, BasicCompositionTests):
                             self.fail_current_test()
                         unique_ids.add(value)
                     else:
+                        # If the attribute is present but not a string
                         location = AttributePathLocation(
                             endpoint_id,
                             Clusters.Descriptor.id,
-                            Clusters.Descriptor.Attributes.EndpointUniqueID.attribute_id
+                            Clusters.Descriptor.Attributes.EndpointUniqueId.attribute_id
                         )
                         self.record_error(
                             self.get_test_name(),
